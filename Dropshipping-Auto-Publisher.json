@@ -1,0 +1,157 @@
+{
+  "name": "Dropshipping Auto Publisher",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "23cc357e-5445-4afa-90d9-08339f07b852",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.aliexpress.com/products",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "47f24b71-beca-40a6-97a8-852a80836fc4",
+      "name": "Fetch Products (AliExpress API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        304,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(item => ({ json: {\n  title: item.json.title,\n  price: item.json.price,\n  image: item.json.image,\n  link: item.json.link\n}}));"
+      },
+      "id": "2b60ed5d-32b8-4a0b-aab5-9a4eefa7152c",
+      "name": "Prepare Product Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        608,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "id": "f7b0c7e0-c98c-4d69-9250-9a826d365655",
+      "name": "Write to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        912,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(item => ({json: {\n  message: `🔥 منتج جديد من علي إكسبريس\\n\\n${item.json.title}\\nالسعر: ${item.json.price}$\\n🔗 رابط الشراء: ${item.json.link}`,\n  image: item.json.image\n}}));"
+      },
+      "id": "7107fb54-7d9c-4404-be30-b4d232a470f3",
+      "name": "Create Post Text",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        608,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v12.0/YOUR_PAGE_ID/photos",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "b8ae4c03-9fe0-486c-b22f-8d7faff1e5ec",
+      "name": "Post to Facebook Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        912,
+        256
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Products (AliExpress API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Products (AliExpress API)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Product Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Product Data": {
+      "main": [
+        [
+          {
+            "node": "Write to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Post Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Post Text": {
+      "main": [
+        [
+          {
+            "node": "Post to Facebook Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3d00b2a2-746c-4062-9eeb-122322660776",
+  "meta": {
+    "instanceId": "2ddabfb1788364c84c554645ea0827de8b2e37490e53b974d7321dcfedcbb516"
+  },
+  "id": "RKhAOV0JnNCKhUKE",
+  "tags": []
+}
